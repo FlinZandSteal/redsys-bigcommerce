@@ -1,0 +1,17 @@
+{
+  "name": "redsys-bigcommerce-gateway",
+  "version": "1.0.0",
+  "description": "Pasarela de pago Redsys para BigCommerce",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "redsys-easy": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
