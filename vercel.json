@@ -1,4 +1,7 @@
 {
   "version": 2,
-  "name": "redsys-bigcommerce-gateway"
+  "name": "redsys-bigcommerce-gateway",
+  "buildCommand": "echo 'no build'",
+  "outputDirectory": ".",
+  "installCommand": "npm install"
 }
