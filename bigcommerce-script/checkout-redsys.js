@@ -15,7 +15,7 @@
 
   // ── Configuración ─────────────────────────────────────────────────────────
   // Cambia esta URL por la de tu despliegue en Vercel
-  var GATEWAY_URL = "https://TU-PROYECTO.vercel.app";
+  var GATEWAY_URL = "https://redsys-bigcommerce.vercel.app/";
 
   // ── Utilidades ────────────────────────────────────────────────────────────
   function log(msg) {
