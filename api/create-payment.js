@@ -11,6 +11,18 @@ const {
 } = require("../lib/redsys");
 
 module.exports = async function handler(req, res) {
+
+  // ── CORS ──────────────────────────────────────────────────────────────
+  res.setHeader("Access-Control-Allow-Origin", "https://compralo24.com");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Preflight request (CORS check del navegador)
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  // ─────────────────────────────────────────────────────────────────────
+
   // Solo aceptamos POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
@@ -19,22 +31,24 @@ module.exports = async function handler(req, res) {
   try {
     // ── 1. Extraer parámetros del body ────────────────────────────────────────
     const {
-      orderId,        // ID del pedido en BigCommerce
-      amount,         // Importe en decimal, ej: "19.99"
+      orderId,
+      amount,
       currency = "978",
       description = "Pedido Compralo24",
     } = req.body;
 
     if (!orderId || !amount) {
-      return res.status(400).json({ error: "Faltan parámetros: orderId y amount son obligatorios" });
+      return res.status(400).json({
+        error: "Faltan parámetros: orderId y amount son obligatorios"
+      });
     }
 
     // ── 2. Configuración desde variables de entorno ───────────────────────────
-    const secretKey   = process.env.REDSYS_SECRET_KEY;
-    const merchantCode = process.env.REDSYS_MERCHANT_CODE;
-    const terminal    = process.env.REDSYS_TERMINAL;
-    const environment = process.env.REDSYS_ENVIRONMENT || "test";
-    const baseUrl     = process.env.BASE_URL || "https://redsys.compralo24.com";
+    const secretKey     = process.env.REDSYS_SECRET_KEY;
+    const merchantCode   = process.env.REDSYS_MERCHANT_CODE;
+    const terminal       = process.env.REDSYS_TERMINAL;
+    const environment    = process.env.REDSYS_ENVIRONMENT || "test";
+    const baseUrl        = process.env.BASE_URL || "https://redsys.compralo24.com";
 
     if (!secretKey || !merchantCode || !terminal) {
       console.error("Variables de entorno de Redsys no configuradas");
@@ -46,12 +60,11 @@ module.exports = async function handler(req, res) {
     const amountCents = toCents(amount);
     const redsysUrl   = REDSYS_URLS[environment] || REDSYS_URLS.test;
 
-    // URLs de retorno
     const urlOK           = `${baseUrl}/api/payment-ok?orderId=${orderId}`;
     const urlKO           = `${baseUrl}/api/payment-ko?orderId=${orderId}`;
     const urlNotification = `${baseUrl}/api/redsys-notify`;
 
-    // ── 4. Construir la petición firmada ──────────────────────────────────────
+    // ── 4. Construir petición firmada ─────────────────────────────────────────
     const redsysParams = buildRedsysRequest({
       secretKey,
       merchantCode,
@@ -66,9 +79,11 @@ module.exports = async function handler(req, res) {
       productDescription: description,
     });
 
-    console.log(`[create-payment] Pedido ${orderId} → order Redsys: ${order}, importe: ${amountCents} céntimos`);
+    console.log(
+      `[create-payment] Pedido ${orderId} → order Redsys: ${order}, importe: ${amountCents} céntimos`
+    );
 
-    // ── 5. Devolver HTML con formulario auto-submit ───────────────────────────
+    // ── 5. HTML auto-submit ───────────────────────────────────────────────────
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -128,13 +143,12 @@ module.exports = async function handler(req, res) {
   </div>
 
   <form id="redsysForm" action="${redsysUrl}" method="POST" style="display:none;">
-    <input type="hidden" name="Ds_SignatureVersion"   value="${redsysParams.Ds_SignatureVersion}">
+    <input type="hidden" name="Ds_SignatureVersion" value="${redsysParams.Ds_SignatureVersion}">
     <input type="hidden" name="Ds_MerchantParameters" value="${redsysParams.Ds_MerchantParameters}">
-    <input type="hidden" name="Ds_Signature"          value="${redsysParams.Ds_Signature}">
+    <input type="hidden" name="Ds_Signature" value="${redsysParams.Ds_Signature}">
   </form>
 
   <script>
-    // Auto-submit tras 500ms para que el usuario vea la pantalla de carga
     setTimeout(function() {
       document.getElementById('redsysForm').submit();
     }, 500);
@@ -147,6 +161,9 @@ module.exports = async function handler(req, res) {
 
   } catch (error) {
     console.error("[create-payment] Error:", error);
-    return res.status(500).json({ error: "Error interno del servidor", detail: error.message });
+    return res.status(500).json({
+      error: "Error interno del servidor",
+      detail: error.message
+    });
   }
 };
