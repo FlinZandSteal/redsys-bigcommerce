@@ -17,13 +17,10 @@ module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Preflight request (CORS check del navegador)
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-  // ─────────────────────────────────────────────────────────────────────
 
-  // Solo aceptamos POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
@@ -45,10 +42,10 @@ module.exports = async function handler(req, res) {
 
     // ── 2. Configuración desde variables de entorno ───────────────────────────
     const secretKey     = process.env.REDSYS_SECRET_KEY;
-    const merchantCode   = process.env.REDSYS_MERCHANT_CODE;
-    const terminal       = process.env.REDSYS_TERMINAL;
-    const environment    = process.env.REDSYS_ENVIRONMENT || "test";
-    const baseUrl        = process.env.BASE_URL || "https://redsys.compralo24.com";
+    const merchantCode  = process.env.REDSYS_MERCHANT_CODE;
+    const terminal      = process.env.REDSYS_TERMINAL;
+    const environment   = process.env.REDSYS_ENVIRONMENT || "test";
+    const baseUrl       = process.env.BASE_URL || "https://redsys.compralo24.com";
 
     if (!secretKey || !merchantCode || !terminal) {
       console.error("Variables de entorno de Redsys no configuradas");
@@ -56,7 +53,10 @@ module.exports = async function handler(req, res) {
     }
 
     // ── 3. Preparar datos del pedido ──────────────────────────────────────────
-    const order       = formatOrderNumber(orderId);
+    const timestamp   = Date.now().toString().slice(-6);
+    const rawOrder    = String(orderId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+    const order       = formatOrderNumber(rawOrder + timestamp);
+
     const amountCents = toCents(amount);
     const redsysUrl   = REDSYS_URLS[environment] || REDSYS_URLS.test;
 
