@@ -1,3 +1,11 @@
 {
-  "version": 2
+  "name": "redsys-bigcommerce-gateway",
+  "version": "1.0.0",
+  "description": "Pasarela de pago Redsys para BigCommerce",
+  "dependencies": {
+    "redsys-easy": "^3.0.2"
+  },
+  "engines": {
+    "node": "18.x"
+  }
 }
